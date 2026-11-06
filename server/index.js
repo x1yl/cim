@@ -200,6 +200,7 @@ function handle(ws, state, msg) {
         const tState = connections.get(targetWs);
         if (!dmRoom.members.has(targetUserId)) { joinRoom(dmRoom, targetUserId, targetWs); tState.rooms.add(dmRoom.code); }
         sendTo(targetWs, { type: "dm_invite", room: dmRoom.code, from: { userId: state.userId, name: state.name, color: state.color } });
+        sendTo(targetWs, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true });
       }
       sendTo(ws, { type: "room_created", code: dmRoom.code, name: dmRoom.name, isDM: true });
       sendTo(ws, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true });
@@ -267,6 +268,8 @@ function handle(ws, state, msg) {
       if (!room || room.owner !== state.userId) return;
       const mid = sanitize(String(msg.messageId), 64);
       if (room.pins.has(mid)) room.pins.delete(mid); else room.pins.add(mid);
+      const m = room.history.find((x) => x.id === mid);
+      if (m) m.pinned = room.pins.has(mid);
       broadcast(room, { type: "pin", room: room.code, messageId: mid, pinned: room.pins.has(mid) });
       break;
     }
