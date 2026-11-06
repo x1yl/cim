@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  cim:
+    build: .
+    container_name: cim
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+    # For TLS on a Pi, put Caddy in front (see Caddyfile).
+
+  # Optional reverse proxy for HTTPS (needed for wss:// on open internet)
+  caddy:
+    image: caddy:2-alpine
+    container_name: cim-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - cim
+    profiles: ["tls"]
+
+volumes:
+  caddy_data:
+  caddy_config:

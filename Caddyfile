@@ -1,0 +1,5 @@
+# Replace example.com with your domain (or Pi's public IP with a DNS name).
+# Caddy will auto-provision Let's Encrypt certs.
+example.com {
+    reverse_proxy cim:3001
+}
