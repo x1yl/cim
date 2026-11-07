@@ -145,7 +145,7 @@ async function handle(ws, state, msg) {
         return;
       }
 
-      const color = /^#[0-9a-fA-F]{6}$/.test(msg.color) ? msg.color : randomColor();
+      const color = /^#[0-9a-fA-F]{6}$/.test(msg.color) ? msg.color.toLowerCase() : randomColor();
       state.userId = uuid();
       state.name = name;
       state.color = color;
@@ -223,6 +223,29 @@ async function handle(ws, state, msg) {
           userId: state.userId,
           previousName,
           name: state.name,
+          color: state.color,
+        });
+        broadcastPresence(room);
+      }
+      break;
+    }
+
+    case "set_color": {
+      if (!state.userId) return;
+      const color = /^#[0-9a-fA-F]{6}$/.test(msg.color) ? msg.color.toLowerCase() : "";
+      if (!color) {
+        sendTo(ws, { type: "error", message: "invalid color" });
+        return;
+      }
+      if (state.color === color) return;
+      state.color = color;
+      for (const code of state.rooms) {
+        const room = getRoom(code);
+        if (!room) continue;
+        broadcast(room, {
+          type: "color_changed",
+          room: code,
+          userId: state.userId,
           color: state.color,
         });
         broadcastPresence(room);

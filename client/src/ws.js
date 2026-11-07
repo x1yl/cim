@@ -106,6 +106,14 @@ function handle(msg) {
       }
       break;
     }
+    case "color_changed": {
+      const members = (s.presence[msg.room] || []).map((m) =>
+        m.userId === msg.userId ? { ...m, color: msg.color } : m
+      );
+      s.setPresence(msg.room, members);
+      if (msg.userId === s.userId) s.setColor(msg.color);
+      break;
+    }
     case "name_blocked":
       pendingHello = null;
       s.setNamePending(false);

@@ -77,7 +77,6 @@ export default function RoomView() {
         </AnimatePresence>
         {msgs.length === 0 && (
           <div className="text-center text-slate-500 py-12">
-            <div className="text-4xl mb-2">✨</div>
             No messages yet. Be the first to post.
           </div>
         )}

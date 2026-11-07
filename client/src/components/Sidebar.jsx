@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { send, onMessage } from "../ws";
 import { readableText } from "../colors";
+import { ACCENT_COLORS } from "../palette";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2 } from "lucide-react";
+import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2, Palette } from "lucide-react";
 
 export default function Sidebar() {
   const {
-    rooms, activeRoom, setActiveRoom, userCode, name, color, presence, status,
+    rooms, activeRoom, setActiveRoom, userCode, name, color, setColor, presence, status,
     namePending, nameError, setNamePending, setNameError,
   } = useStore();
   const [creating, setCreating] = useState(false);
@@ -18,6 +19,7 @@ export default function Sidebar() {
   const [tab, setTab] = useState("rooms"); // rooms | join | dm
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(name);
+  const [showColors, setShowColors] = useState(false);
 
   const roomList = Object.values(rooms);
 
@@ -93,6 +95,12 @@ export default function Sidebar() {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const changeColor = (c) => {
+    setColor(c);
+    // If the socket is reconnecting, hello() will sync the saved color later.
+    send({ type: "set_color", color: c });
+  };
+
   return (
     <aside className="w-72 shrink-0 glass-strong border-r border-accent/20 flex flex-col relative z-10">
       <div className="p-4 border-b border-white/5">
@@ -116,6 +124,15 @@ export default function Sidebar() {
                   <Pencil size={12} />
                 </button>
               )}
+              <button
+                onClick={() => setShowColors((v) => !v)}
+                title="Change accent color"
+                aria-label="Change accent color"
+                aria-expanded={showColors}
+                className={`transition shrink-0 ${showColors ? "text-accent" : "text-slate-500 hover:text-accent"}`}
+              >
+                <Palette size={12} />
+              </button>
             </div>
             <button onClick={copyCode} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
               {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -123,6 +140,25 @@ export default function Sidebar() {
             </button>
           </div>
         </div>
+
+        {showColors && (
+          <div className="mt-3 rounded-lg bg-white/5 border border-white/10 px-2.5 py-2">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Accent color</div>
+            <div className="flex flex-wrap gap-1.5">
+              {ACCENT_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => changeColor(c)}
+                  title={c}
+                  aria-label={`Use accent color ${c}`}
+                  className={`w-6 h-6 rounded-full transition-transform ${color === c ? "scale-110 ring-2 ring-white" : "hover:scale-110"}`}
+                  style={{ background: c }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {editingName && (
           <form onSubmit={saveName} className="mt-3 space-y-2">

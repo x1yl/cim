@@ -3,8 +3,7 @@ import { useStore } from "../store";
 import { hello } from "../ws";
 import { motion } from "framer-motion";
 import { Loader2, ShieldCheck } from "lucide-react";
-
-const COLORS = ["#00e5ff","#ffb300","#ff1744","#06d6a0","#ffbe0b","#fb5607","#00f5d4","#f72585"];
+import { ACCENT_COLORS } from "../palette";
 
 export default function Onboard() {
   const {
@@ -12,7 +11,7 @@ export default function Onboard() {
     setNamePending, setNameError,
   } = useStore();
   const [name, setNameLocal] = useState("");
-  const [color, setColorLocal] = useState(storedColor || COLORS[1]);
+  const [color, setColorLocal] = useState(storedColor || ACCENT_COLORS[1]);
 
   const pickColor = (c) => {
     setColorLocal(c);
@@ -58,7 +57,7 @@ export default function Onboard() {
           <div>
             <label className="text-xs uppercase tracking-wider text-slate-400">Accent color</label>
             <div className="flex gap-2 mt-2 flex-wrap">
-              {COLORS.map((c) => (
+              {ACCENT_COLORS.map((c) => (
                 <button
                   type="button"
                   key={c}

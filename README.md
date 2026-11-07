@@ -4,6 +4,7 @@ A real-time forum + chat with **zero auth, zero storage**. Everything lives in m
 
 ## Features
 - Editable display-name identity (stored in your browser only, moderated before it goes live)
+- Accent color you can change anytime from the sidebar; it themes the whole UI
 - Public lobby + code-gated private rooms
 - DMs by personal user code
 - Forum-style posts with markdown, threaded replies, emoji reactions, pins
