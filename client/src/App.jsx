@@ -51,7 +51,7 @@ export default function App() {
       <Aurora />
       <Particles />
       <Sidebar />
-      <main className="flex-1 flex flex-col min-w-0 relative z-10">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 relative z-10">
         <RoomView />
       </main>
       <CommandPalette />

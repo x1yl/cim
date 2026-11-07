@@ -42,7 +42,7 @@ export default function Composer({ room }) {
   };
 
   return (
-    <form onSubmit={submit} className="border-t border-accent/20 glass-strong p-4 space-y-2">
+    <form onSubmit={submit} className="shrink-0 border-t border-accent/20 glass-strong p-4 space-y-2">
       <div className="flex items-center gap-2">
         <button
           type="button"
