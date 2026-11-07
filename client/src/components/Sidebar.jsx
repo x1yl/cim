@@ -384,7 +384,7 @@ export default function Sidebar() {
           <span className={`w-1.5 h-1.5 rounded-full ${status === "connected" ? "bg-green-400 shadow-[0_0_6px_#4ade80]" : "bg-yellow-400 animate-pulse"}`} />
           <span className={status === "connected" ? "text-green-400" : "text-yellow-400"}>{status}</span>
         </div>
-        <div className="text-[10px] text-slate-500">Rooms vanish when server restarts. Nothing is stored.</div>
+        <div className="text-[10px] text-slate-500">Rooms vanish when everyone leaves (or on restart). Nothing is stored.</div>
       </div>
     </aside>
   );
