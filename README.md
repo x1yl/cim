@@ -66,12 +66,12 @@ nano .env            # set MISTRAL_API_KEY=... (leave blank to disable moderatio
 ### 3. Test on the LAN
 ```bash
 docker compose up -d --build
-# open http://<pi-lan-ip>:3001
+# open http://<pi-lan-ip>:3002
 ```
 Check logs / health:
 ```bash
 docker compose logs -f cim
-curl http://localhost:3001/health
+curl http://localhost:3002/health
 ```
 
 ### 4. Put it on the open internet with HTTPS
@@ -89,11 +89,11 @@ WebSockets from an HTTPS page must use `wss://`, so you need TLS. Two good optio
 
 **Option B — Cloudflare Tunnel (no port forwarding)**
 1. Create a tunnel in the Cloudflare dashboard and install `cloudflared` on the Pi.
-2. Route `cim.example.com` → `http://localhost:3001`.
+2. Route `cim.example.com` → `http://localhost:3002`.
 3. Cloudflare terminates TLS; no open ports on your router.
    ```bash
    # example
-   cloudflared tunnel --url http://localhost:3001
+   cloudflared tunnel --url http://localhost:3002
    ```
 
 ### Updating
