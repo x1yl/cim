@@ -54,6 +54,16 @@ function sanitize(str, max = 2000) {
   return str.slice(0, max).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
 }
 
+function sanitizeName(str, max = 32) {
+  return sanitize(str, max).replace(/\s+/g, " ").trim();
+}
+
+function nameBlockedMessage(verdict) {
+  return verdict.error
+    ? "Name blocked: moderation service unavailable. Try again."
+    : "That display name was blocked by moderation. Try another.";
+}
+
 // token bucket per socket
 function makeLimiter() {
   let tokens = 20;
@@ -78,7 +88,10 @@ function broadcastPresence(room) {
 
 wss.on("connection", (ws, req) => {
   const limiter = makeLimiter();
-  const state = { userId: null, name: null, color: null, code: null, rooms: new Set(), limiter };
+  const state = {
+    userId: null, name: null, color: null, code: null, rooms: new Set(),
+    limiter, helloPending: false, namePending: false,
+  };
   connections.set(ws, state);
 
   ws.on("message", (raw) => {
@@ -109,8 +122,29 @@ wss.on("connection", (ws, req) => {
 async function handle(ws, state, msg) {
   switch (msg.type) {
     case "hello": {
-      if (state.userId) return;
-      const name = sanitize(msg.name || "anon", 32) || "anon";
+      if (state.userId || state.helloPending) return;
+      state.helloPending = true;
+
+      const name = sanitizeName(msg.name || "anon") || "anon";
+      // Display names are moderated before the identity is created.
+      let nameVerdict;
+      try {
+        nameVerdict = await moderateText(name);
+      } finally {
+        state.helloPending = false;
+      }
+      if (!nameVerdict.allowed) {
+        sendTo(ws, {
+          type: "name_blocked",
+          onboarding: true,
+          name,
+          flagged: nameVerdict.flagged,
+          scores: nameVerdict.scores,
+          message: nameBlockedMessage(nameVerdict),
+        });
+        return;
+      }
+
       const color = /^#[0-9a-fA-F]{6}$/.test(msg.color) ? msg.color : randomColor();
       state.userId = uuid();
       state.name = name;
@@ -143,6 +177,55 @@ async function handle(ws, state, msg) {
         sendTo(ws, { type: "room_joined", room: "LOBBY", name: lobby.name, history: lobby.history });
         broadcast(lobby, { type: "joined", room: "LOBBY", userId: state.userId, name: state.name, color: state.color }, state.userId);
         broadcastPresence(lobby);
+      }
+      break;
+    }
+
+    case "set_name": {
+      if (!state.userId) return;
+      if (state.namePending) {
+        sendTo(ws, { type: "name_blocked", name: state.name, message: "A name check is already in progress." });
+        return;
+      }
+
+      const name = sanitizeName(msg.name);
+      if (!name) {
+        sendTo(ws, { type: "name_blocked", name: "", message: "Display name cannot be empty." });
+        return;
+      }
+
+      state.namePending = true;
+      let verdict;
+      try {
+        verdict = await moderateText(name);
+      } finally {
+        state.namePending = false;
+      }
+      if (!verdict.allowed) {
+        sendTo(ws, {
+          type: "name_blocked",
+          name,
+          flagged: verdict.flagged,
+          scores: verdict.scores,
+          message: nameBlockedMessage(verdict),
+        });
+        return;
+      }
+
+      const previousName = state.name;
+      state.name = name;
+      for (const code of state.rooms) {
+        const room = getRoom(code);
+        if (!room) continue;
+        broadcast(room, {
+          type: "name_changed",
+          room: code,
+          userId: state.userId,
+          previousName,
+          name: state.name,
+          color: state.color,
+        });
+        broadcastPresence(room);
       }
       break;
     }

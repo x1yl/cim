@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useStore } from "../store";
-import { send } from "../ws";
+import { readableText } from "../colors";
 import { motion, AnimatePresence } from "framer-motion";
 import Message from "./Message.jsx";
 import Composer from "./Composer.jsx";
@@ -34,10 +34,10 @@ export default function RoomView() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      <header className="px-6 py-4 border-b border-amber-500/20 glass-strong flex items-center gap-3">
-        {room?.isDM ? <MessageCircle className="text-cyan-400" /> : <Hash className="text-slate-400" />}
+      <header className="px-6 py-4 border-b border-accent/20 glass-strong flex items-center gap-3">
+        {room?.isDM ? <MessageCircle className="text-accent" /> : <Hash className="text-slate-400" />}
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold font-display text-xl tracking-wide truncate text-amber-300">{room?.name || activeRoom}</h2>
+          <h2 className="font-bold font-display text-xl tracking-wide truncate text-accent">{room?.name || activeRoom}</h2>
           <div className="text-xs text-slate-400 flex items-center gap-2">
             <span className="font-mono">{activeRoom}</span>
             <span>·</span>
@@ -47,7 +47,15 @@ export default function RoomView() {
         </div>
         <div className="flex -space-x-2">
           {members.slice(0, 5).map((m) => (
-            <div key={m.userId} title={m.name} className="w-7 h-7 rounded-full border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold" style={{ background: m.color || "#ffb300" }}>
+            <div
+              key={m.userId}
+              title={m.name}
+              className="w-7 h-7 rounded-full border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold"
+              style={{
+                background: m.color || "rgb(var(--accent-rgb))",
+                color: m.color ? readableText(m.color) : "var(--accent-contrast)",
+              }}
+            >
               {(m.name || "?").slice(0, 2).toUpperCase()}
             </div>
           ))}

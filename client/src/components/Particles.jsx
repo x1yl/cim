@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "../store";
+import { hexToRgb } from "../colors";
 
 export default function Particles() {
   const canvasRef = useRef(null);
   const reducedMotion = useStore((s) => s.reducedMotion);
+  const color = useStore((s) => s.color);
 
   useEffect(() => {
     if (reducedMotion) return;
+    const rgb = hexToRgb(color) || { r: 255, g: 179, b: 0 };
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -33,7 +36,7 @@ export default function Particles() {
         if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,179,0,${p.a})`;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${p.a})`;
         ctx.fill();
       }
       // connect close points
@@ -42,7 +45,7 @@ export default function Particles() {
           const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
           const d = Math.hypot(dx, dy);
           if (d < 110) {
-            ctx.strokeStyle = `rgba(0,229,255,${0.12 * (1 - d / 110)})`;
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.12 * (1 - d / 110)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);
@@ -55,7 +58,7 @@ export default function Particles() {
     };
     draw();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
-  }, [reducedMotion]);
+  }, [reducedMotion, color]);
 
   if (reducedMotion) return null;
   return <canvas ref={canvasRef} className="particles" />;

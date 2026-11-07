@@ -3,17 +3,17 @@
 A real-time forum + chat with **zero auth, zero storage**. Everything lives in memory on a tiny WebSocket server. Rooms are gated by 6-character codes you share out-of-band. Closing the server wipes everything — by design.
 
 ## Features
-- Display-name identity (stored in your browser only)
+- Editable display-name identity (stored in your browser only, moderated before it goes live)
 - Public lobby + code-gated private rooms
 - DMs by personal user code
 - Forum-style posts with markdown, threaded replies, emoji reactions, pins
 - Typing indicators, presence, real-time broadcast
-- "Over the top" UI: aurora background, particles, glassmorphism, animations, themes, command palette (⌘K)
+- "Over the top" UI: accent-themed aurora background, particles, glassmorphism, animations, themes, command palette (⌘K)
 - Rate limiting per socket, room size caps
 
 ## AI moderation (Mistral)
 
-Messages are checked **server-side** with Mistral's moderation API *before* they are stored or broadcast. The API key never reaches the browser.
+Messages **and display names** are checked **server-side** with Mistral's moderation API *before* they are stored, broadcast, or accepted. The API key never reaches the browser.
 
 ```bash
 cp .env.example .env
@@ -30,7 +30,7 @@ Configuration:
 | `MODERATION_FAIL_CLOSED` | `false` | `true` = reject when the API is unreachable; `false` = allow |
 | `MODERATION_TIMEOUT_MS` | `8000` | Per-request timeout |
 
-Blocked messages are not persisted or broadcast; the sender gets a `moderation_blocked` event and a red banner listing the flagged categories. Results are cached in-memory for 5 minutes to avoid duplicate API calls.
+Blocked messages are not persisted or broadcast; the sender gets a `moderation_blocked` event and a red banner listing the flagged categories. Display names are moderated on first entry and on every change — a blocked name is rejected and the previous name is kept. Results are cached in-memory for 5 minutes to avoid duplicate API calls.
 
 ## Dev
 ```bash

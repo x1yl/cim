@@ -1,19 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
-import { send } from "../ws";
+import { send, onMessage } from "../ws";
+import { readableText } from "../colors";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Hash, MessageCircle, Search, LogOut, Copy, Check } from "lucide-react";
+import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2 } from "lucide-react";
 
 export default function Sidebar() {
-  const { rooms, activeRoom, setActiveRoom, userCode, name, color, presence, status } = useStore();
+  const {
+    rooms, activeRoom, setActiveRoom, userCode, name, color, presence, status,
+    namePending, nameError, setNamePending, setNameError,
+  } = useStore();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [dmCode, setDmCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState("rooms"); // rooms | join | dm
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState(name);
 
   const roomList = Object.values(rooms);
+
+  useEffect(() => {
+    if (!editingName) setDraftName(name);
+  }, [name, editingName]);
+
+  useEffect(() => onMessage((msg) => {
+    if (msg.type === "name_changed" && msg.userId === useStore.getState().userId) {
+      setEditingName(false);
+    }
+  }), []);
+
+  const startEditName = () => {
+    setDraftName(name);
+    setNameError("");
+    setEditingName(true);
+  };
+
+  const cancelEditName = () => {
+    if (namePending) return;
+    setEditingName(false);
+    setDraftName(name);
+    setNameError("");
+  };
+
+  const saveName = (e) => {
+    e.preventDefault();
+    const n = draftName.trim().replace(/\s+/g, " ");
+    if (!n) {
+      setNameError("Display name cannot be empty.");
+      return;
+    }
+    if (n === name) {
+      setEditingName(false);
+      setNameError("");
+      return;
+    }
+    setNameError("");
+    setNamePending(true);
+    const ok = send({ type: "set_name", name: n });
+    if (!ok) {
+      setNamePending(false);
+      setNameError("Not connected — reconnecting. Try again in a moment.");
+    }
+  };
 
   const createRoom = (e) => {
     e.preventDefault();
@@ -44,20 +94,73 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-72 shrink-0 glass-strong border-r border-amber-500/20 flex flex-col relative z-10">
+    <aside className="w-72 shrink-0 glass-strong border-r border-accent/20 flex flex-col relative z-10">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style={{ background: color }}>
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+            style={{ background: color, color: readableText(color) }}
+          >
             {name.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-semibold truncate">{name}</div>
+            <div className="flex items-center gap-1.5">
+              <div className="font-semibold truncate">{name}</div>
+              {!editingName && (
+                <button
+                  onClick={startEditName}
+                  title="Edit display name"
+                  aria-label="Edit display name"
+                  className="text-slate-500 hover:text-accent transition shrink-0"
+                >
+                  <Pencil size={12} />
+                </button>
+              )}
+            </div>
             <button onClick={copyCode} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
               {copied ? <Check size={12} /> : <Copy size={12} />}
               {userCode}
             </button>
           </div>
         </div>
+
+        {editingName && (
+          <form onSubmit={saveName} className="mt-3 space-y-2">
+            <input
+              autoFocus
+              value={draftName}
+              onChange={(e) => { setDraftName(e.target.value); setNameError(""); }}
+              maxLength={32}
+              disabled={namePending}
+              placeholder="your alias"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={namePending}
+                className="flex-1 py-1.5 rounded-lg bg-accent text-accent-contrast text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-1.5"
+              >
+                {namePending ? <><Loader2 size={12} className="animate-spin" /> Checking name…</> : "Save name"}
+              </button>
+              <button
+                type="button"
+                onClick={cancelEditName}
+                disabled={namePending}
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs disabled:opacity-60"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500">Names are checked by Mistral before going live.</p>
+          </form>
+        )}
+
+        {nameError && (
+          <div className="mt-2 text-xs text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg px-2.5 py-1.5">
+            {nameError}
+          </div>
+        )}
       </div>
 
       <div className="px-3 pt-3">
@@ -66,7 +169,7 @@ export default function Sidebar() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 text-xs py-1.5 rounded-md capitalize transition ${tab === t ? "bg-amber-500 text-white" : "text-slate-400 hover:text-white"}`}
+              className={`flex-1 text-xs py-1.5 rounded-md capitalize transition ${tab === t ? "bg-accent text-accent-contrast" : "text-slate-400 hover:text-white"}`}
             >
               {t === "rooms" ? "Rooms" : t === "join" ? "Join" : "DM"}
             </button>
@@ -97,9 +200,9 @@ export default function Sidebar() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="room name"
-                    className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-accent focus:outline-none"
                   />
-                  <button type="submit" className="w-full py-2 rounded-lg bg-amber-500 text-sm font-medium">Create</button>
+                  <button type="submit" className="w-full py-2 rounded-lg bg-accent text-accent-contrast text-sm font-medium">Create</button>
                 </motion.form>
               )}
             </AnimatePresence>
@@ -112,9 +215,9 @@ export default function Sidebar() {
                   key={r.code}
                   whileHover={{ x: 2 }}
                   onClick={() => setActiveRoom(r.code)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2 ${isActive ? "bg-amber-500/30 border border-amber-400/40" : "hover:bg-white/5"}`}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2 ${isActive ? "bg-accent/20 border border-accent/40" : "hover:bg-white/5"}`}
                 >
-                  {r.isDM ? <MessageCircle size={15} className="text-cyan-400" /> : <Hash size={15} className="text-slate-400" />}
+                  {r.isDM ? <MessageCircle size={15} className="text-accent" /> : <Hash size={15} className="text-slate-400" />}
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">{r.name || r.code}</div>
                     <div className="text-[10px] text-slate-500">{r.code} · {members} online</div>
@@ -131,9 +234,9 @@ export default function Sidebar() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="ABC-123"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-amber-400 focus:outline-none"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-accent focus:outline-none"
             />
-            <button type="submit" className="w-full py-2 rounded-lg bg-red-600 text-sm font-medium">Join room</button>
+            <button type="submit" className="w-full py-2 rounded-lg bg-accent text-accent-contrast text-sm font-medium">Join room</button>
             <p className="text-xs text-slate-500">Enter a 6-character room code shared by someone.</p>
           </form>
         )}
@@ -144,15 +247,15 @@ export default function Sidebar() {
               value={dmCode}
               onChange={(e) => setDmCode(e.target.value.toLowerCase())}
               placeholder="user code"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-amber-400 focus:outline-none"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-accent focus:outline-none"
             />
-            <button type="submit" className="w-full py-2 rounded-lg bg-cyan-600 text-sm font-medium">Start DM</button>
+            <button type="submit" className="w-full py-2 rounded-lg bg-accent text-accent-contrast text-sm font-medium">Start DM</button>
             <p className="text-xs text-slate-500">Ask the other person for their personal code (shown under their name).</p>
           </form>
         )}
       </div>
 
-      <div className="p-3 border-t border-amber-500/10 space-y-1">
+      <div className="p-3 border-t border-accent/10 space-y-1">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
           <span className={`w-1.5 h-1.5 rounded-full ${status === "connected" ? "bg-green-400 shadow-[0_0_6px_#4ade80]" : "bg-yellow-400 animate-pulse"}`} />
           <span className={status === "connected" ? "text-green-400" : "text-yellow-400"}>{status}</span>

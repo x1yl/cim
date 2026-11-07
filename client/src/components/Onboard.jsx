@@ -2,20 +2,29 @@ import { useState } from "react";
 import { useStore } from "../store";
 import { hello } from "../ws";
 import { motion } from "framer-motion";
+import { Loader2, ShieldCheck } from "lucide-react";
 
 const COLORS = ["#00e5ff","#ffb300","#ff1744","#06d6a0","#ffbe0b","#fb5607","#00f5d4","#f72585"];
 
 export default function Onboard() {
-  const { setName, setColor } = useStore();
+  const {
+    namePending, nameError, setColor, color: storedColor,
+    setNamePending, setNameError,
+  } = useStore();
   const [name, setNameLocal] = useState("");
-  const [color, setColorLocal] = useState(COLORS[1]);
+  const [color, setColorLocal] = useState(storedColor || COLORS[1]);
+
+  const pickColor = (c) => {
+    setColorLocal(c);
+    setColor(c); // live-preview the theme while onboarding
+  };
 
   const submit = (e) => {
     e.preventDefault();
-    const n = name.trim().slice(0, 32) || "anon";
-    setName(n);
-    setColor(color);
-    hello();
+    const n = name.trim().replace(/\s+/g, " ").slice(0, 32) || "anon";
+    setNameError("");
+    setNamePending(true);
+    hello({ name: n, color });
   };
 
   return (
@@ -34,10 +43,17 @@ export default function Onboard() {
             <input
               autoFocus
               value={name}
-              onChange={(e) => setNameLocal(e.target.value)}
+              onChange={(e) => { setNameLocal(e.target.value); setNameError(""); }}
+              maxLength={32}
+              disabled={namePending}
               placeholder="your alias"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30"
+              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-60"
             />
+            {nameError && (
+              <div className="mt-2 text-xs text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+                {nameError}
+              </div>
+            )}
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-slate-400">Accent color</label>
@@ -46,7 +62,7 @@ export default function Onboard() {
                 <button
                   type="button"
                   key={c}
-                  onClick={() => setColorLocal(c)}
+                  onClick={() => pickColor(c)}
                   className={`w-8 h-8 rounded-full transition-transform ${color === c ? "scale-125 ring-2 ring-white" : "hover:scale-110"}`}
                   style={{ background: c }}
                 />
@@ -55,12 +71,17 @@ export default function Onboard() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 panel-angular font-bold font-display tracking-wider bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-400 hover:to-red-500 transition shadow-glow uppercase"
+            disabled={namePending}
+            className="w-full py-3 panel-angular font-bold font-display tracking-wider bg-accent text-accent-contrast hover:opacity-90 transition shadow-glow uppercase disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            Enter the forum →
+            {namePending
+              ? <><Loader2 size={16} className="animate-spin" /> Checking name…</>
+              : "Enter the forum →"}
           </button>
         </form>
-        <p className="text-xs text-slate-500 mt-4">Your name lives only in this browser. Nothing is stored on the server.</p>
+        <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-4">
+          <ShieldCheck size={12} /> Names are checked by Mistral before you enter.
+        </p>
       </motion.div>
     </div>
   );

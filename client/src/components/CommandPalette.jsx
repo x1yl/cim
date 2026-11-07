@@ -69,7 +69,7 @@ export default function CommandPalette() {
               {q.startsWith("create:") && (
                 <button
                   onClick={() => { send({ type: "create_room", name: q.slice(7).trim() }); setPaletteOpen(false); setQ(""); }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm text-amber-200"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm text-accent"
                 >
                   <Plus size={14} /> Create room "{q.slice(7).trim()}"
                 </button>

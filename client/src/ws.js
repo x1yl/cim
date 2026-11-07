@@ -4,6 +4,7 @@ let ws = null;
 let reconnectTimer = null;
 let reconnectDelay = 1000;
 let listeners = new Set();
+let pendingHello = null; // hello awaiting a welcome (also survives a reconnect)
 
 function url() {
   const proto = location.protocol === "https:" ? "wss" : "ws";
@@ -18,7 +19,8 @@ export function connect() {
 
   ws.onopen = () => {
     reconnectDelay = 1000;
-    hello();
+    if (pendingHello) flushHello();
+    else hello();
   };
 
   ws.onmessage = (ev) => {
@@ -45,12 +47,30 @@ function scheduleReconnect() {
 }
 
 export function send(obj) {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(obj));
+    return true;
+  }
+  return false;
 }
 
-export function hello() {
+export function hello(overrides) {
   const { name, color, userCode } = useStore.getState();
-  if (name) send({ type: "hello", name, color, userCode: userCode || undefined });
+  const nextName = overrides?.name ?? name;
+  if (!nextName) return;
+  pendingHello = {
+    type: "hello",
+    name: nextName,
+    color: overrides?.color ?? color,
+    userCode: userCode || undefined,
+  };
+  flushHello();
+}
+
+function flushHello() {
+  if (pendingHello && ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(pendingHello));
+  }
 }
 
 export function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }
@@ -59,12 +79,39 @@ function handle(msg) {
   const s = useStore.getState();
   switch (msg.type) {
     case "welcome":
+      pendingHello = null;
       s.setStatus("connected");
-      useStore.setState({ userId: msg.userId, userCode: msg.userCode, name: msg.name, color: msg.color });
+      useStore.setState({
+        userId: msg.userId,
+        userCode: msg.userCode,
+        name: msg.name,
+        color: msg.color,
+        namePending: false,
+        nameError: "",
+      });
       if (msg.moderation) s.setModeration(msg.moderation);
       localStorage.setItem("cim_usercode", msg.userCode);
       localStorage.setItem("cim_name", msg.name);
       localStorage.setItem("cim_color", msg.color);
+      break;
+    case "name_changed": {
+      const members = (s.presence[msg.room] || []).map((m) =>
+        m.userId === msg.userId ? { ...m, name: msg.name, color: msg.color } : m
+      );
+      s.setPresence(msg.room, members);
+      if (msg.userId === s.userId) {
+        s.setName(msg.name);
+        s.setNamePending(false);
+        s.setNameError("");
+      }
+      break;
+    }
+    case "name_blocked":
+      pendingHello = null;
+      s.setNamePending(false);
+      s.setNameError(msg.message || "Name blocked by moderation.");
+      if (msg.onboarding) s.clearName();
+      if (s.sound) playBlocked();
       break;
     case "room_created":
       s.upsertRoom({ code: msg.code, name: msg.name, isDM: msg.isDM });

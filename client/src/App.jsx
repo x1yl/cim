@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useStore } from "./store";
-import { connect, send, isConnected } from "./ws";
+import { connect } from "./ws";
+import { hexToRgb, readableText } from "./colors";
 import Aurora from "./components/Aurora.jsx";
 import Particles from "./components/Particles.jsx";
 import Onboard from "./components/Onboard.jsx";
@@ -9,7 +10,7 @@ import RoomView from "./components/RoomView.jsx";
 import CommandPalette from "./components/CommandPalette.jsx";
 
 export default function App() {
-  const { name, theme } = useStore();
+  const { name, theme, color } = useStore();
 
   useEffect(() => {
     connect();
@@ -18,6 +19,15 @@ export default function App() {
   useEffect(() => {
     document.documentElement.className = theme === "minimal" ? "" : "dark";
   }, [theme]);
+
+  // The selected accent color drives the whole UI through CSS variables.
+  useEffect(() => {
+    const rgb = hexToRgb(color) || hexToRgb("#ffb300");
+    const root = document.documentElement;
+    root.style.setProperty("--accent", color);
+    root.style.setProperty("--accent-rgb", `${rgb.r} ${rgb.g} ${rgb.b}`);
+    root.style.setProperty("--accent-contrast", readableText(color));
+  }, [color]);
 
   // reduced motion detection
   useEffect(() => {

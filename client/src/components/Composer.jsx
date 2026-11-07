@@ -42,12 +42,12 @@ export default function Composer({ room }) {
   };
 
   return (
-    <form onSubmit={submit} className="border-t border-amber-500/20 glass-strong p-4 space-y-2">
+    <form onSubmit={submit} className="border-t border-accent/20 glass-strong p-4 space-y-2">
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => setShowTitle((v) => !v)}
-          className={`text-xs px-2 py-1 rounded ${showTitle ? "bg-amber-500" : "bg-white/5"} transition`}
+          className={`text-xs px-2 py-1 rounded transition ${showTitle ? "bg-accent text-accent-contrast" : "bg-white/5"}`}
         >
           Title
         </button>
@@ -63,7 +63,7 @@ export default function Composer({ room }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post title (optional)"
-          className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-semibold focus:border-amber-400 focus:outline-none"
+          className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-semibold focus:border-accent focus:outline-none"
         />
       )}
       <div className="flex gap-2 items-end">
@@ -73,12 +73,12 @@ export default function Composer({ room }) {
           onKeyDown={onKeyDown}
           placeholder="Write a message... (markdown)"
           rows={2}
-          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm resize-none focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
+          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm resize-none focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
         />
         <motion.button
           whileTap={{ scale: 0.9 }}
           type="submit"
-          className="px-5 py-2 panel-angular bg-gradient-to-r from-amber-500 to-red-600 font-bold font-display tracking-wider flex items-center gap-2 shadow-glow uppercase"
+          className="px-5 py-2 panel-angular bg-accent text-accent-contrast font-bold font-display tracking-wider flex items-center gap-2 shadow-glow uppercase hover:opacity-90 transition"
         >
           <Send size={16} /> Send
         </motion.button>

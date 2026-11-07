@@ -2,7 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+  /* Default accent (amber). App.jsx updates these from the selected color. */
+  --accent: #ffb300;
+  --accent-rgb: 255 179 0;
+  --accent-contrast: #05050a;
+}
 
 html, body, #root { height: 100%; background: transparent; }
 
@@ -10,18 +16,18 @@ html, body, #root { height: 100%; background: transparent; }
 .arena-bg {
   position: fixed; inset: 0; z-index: -1;
   background:
-    radial-gradient(ellipse at 15% 20%, rgba(255,179,0,0.18), transparent 45%),
-    radial-gradient(ellipse at 85% 75%, rgba(255,23,68,0.16), transparent 45%),
-    radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.08), transparent 60%),
+    radial-gradient(ellipse at 15% 20%, rgb(var(--accent-rgb) / 0.18), transparent 45%),
+    radial-gradient(ellipse at 85% 75%, rgba(255,23,68,0.12), transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgb(var(--accent-rgb) / 0.08), transparent 60%),
     linear-gradient(180deg, #05050a 0%, #0a0a14 100%);
 }
 
 /* animated scanline */
 .scanline {
   position: fixed; left: 0; right: 0; height: 2px; z-index: -1; pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(255,179,0,0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--accent-rgb) / 0.6), transparent);
   animation: scan 6s linear infinite;
-  box-shadow: 0 0 12px rgba(255,179,0,0.5);
+  box-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.5);
 }
 
 .particles {
@@ -35,36 +41,36 @@ html, body, #root { height: 100%; background: transparent; }
   background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,179,0,0.12);
+  border: 1px solid rgb(var(--accent-rgb) / 0.12);
 }
 
 .glass-strong {
   background: linear-gradient(135deg, rgba(20,20,30,0.85), rgba(10,10,16,0.7));
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,179,0,0.2);
+  border: 1px solid rgb(var(--accent-rgb) / 0.2);
 }
 
 .panel-angular {
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
 }
 
-.glow-text { text-shadow: 0 0 20px rgba(255,179,0,0.6), 0 0 40px rgba(255,23,68,0.3); }
-.glow-text-cyan { text-shadow: 0 0 18px rgba(0,229,255,0.7); }
+.glow-text { text-shadow: 0 0 20px rgb(var(--accent-rgb) / 0.6), 0 0 40px rgba(255,23,68,0.3); }
+.glow-text-cyan { text-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.7); }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(255,179,0,0.25); border-radius: 0; }
+::-webkit-scrollbar-thumb { background: rgb(var(--accent-rgb) / 0.25); border-radius: 0; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
 
 .prose-cim p { margin: 0.4rem 0; }
-.prose-cim code { background: rgba(255,179,0,0.1); padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.85em; color: #ffb300; }
-.prose-cim pre { background: rgba(0,0,0,0.5); padding: 0.75rem; border-left: 2px solid #ffb300; overflow-x: auto; }
-.prose-cim a { color: #00e5ff; text-decoration: underline; }
+.prose-cim code { background: rgb(var(--accent-rgb) / 0.1); padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.85em; color: var(--accent); }
+.prose-cim pre { background: rgba(0,0,0,0.5); padding: 0.75rem; border-left: 2px solid var(--accent); overflow-x: auto; }
+.prose-cim a { color: var(--accent); text-decoration: underline; }
 .prose-cim ul, .prose-cim ol { padding-left: 1.2rem; margin: 0.4rem 0; }
-.prose-cim blockquote { border-left: 3px solid #ff1744; padding-left: 0.75rem; opacity: 0.8; }
+.prose-cim blockquote { border-left: 3px solid rgb(var(--accent-rgb) / 0.7); padding-left: 0.75rem; opacity: 0.8; }
 
 /* diagonal stripe accent */
 .stripe-accent {
-  background: repeating-linear-gradient(45deg, rgba(255,179,0,0.06) 0px, rgba(255,179,0,0.06) 2px, transparent 2px, transparent 8px);
+  background: repeating-linear-gradient(45deg, rgb(var(--accent-rgb) / 0.06) 0px, rgb(var(--accent-rgb) / 0.06) 2px, transparent 2px, transparent 8px);
 }
 
 @media (prefers-reduced-motion: reduce) {

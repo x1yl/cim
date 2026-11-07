@@ -9,7 +9,12 @@ export const useStore = create((set, get) => ({
   userCode: localStorage.getItem("cim_usercode") || "",
   userId: null,
   setName: (name) => { localStorage.setItem("cim_name", name); set({ name }); },
+  clearName: () => { localStorage.removeItem("cim_name"); set({ name: "" }); },
   setColor: (color) => { localStorage.setItem("cim_color", color); set({ color }); },
+  namePending: false,
+  setNamePending: (namePending) => set({ namePending }),
+  nameError: "",
+  setNameError: (nameError) => set({ nameError }),
 
   // connection
   status: "disconnected", // disconnected | connecting | connected

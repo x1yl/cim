@@ -10,18 +10,22 @@ export default {
         display: ["Orbitron", "Rajdhani", "sans-serif"],
       },
       colors: {
+        accent: {
+          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
+          contrast: "var(--accent-contrast)",
+        },
         arena: {
-          gold: "#ffb300",
+          gold: "rgb(var(--accent-rgb) / <alpha-value>)",
           crimson: "#ff1744",
-          cyan: "#00e5ff",
+          cyan: "rgb(var(--accent-rgb) / <alpha-value>)",
           obsidian: "#05050a",
           steel: "#1a1a24",
         },
       },
       boxShadow: {
-        glow: "0 0 30px rgba(255,179,0,0.35)",
+        glow: "0 0 30px rgb(var(--accent-rgb) / 0.35)",
         "glow-crimson": "0 0 30px rgba(255,23,68,0.35)",
-        "glow-cyan": "0 0 30px rgba(0,229,255,0.35)",
+        "glow-cyan": "0 0 30px rgb(var(--accent-rgb) / 0.35)",
       },
       clipPath: {
         angular: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
