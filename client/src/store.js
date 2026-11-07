@@ -21,11 +21,29 @@ export const useStore = create((set, get) => ({
   setStatus: (status) => set({ status }),
 
   // rooms
-  rooms: {}, // code -> { code, name, isDM, history, members }
+  rooms: {}, // code -> { code, name, isDM, visibility, history, members }
   activeRoom: null,
   setActiveRoom: (code) => set({ activeRoom: code }),
   upsertRoom: (room) => set((s) => ({ rooms: { ...s.rooms, [room.code || room.room]: { ...(s.rooms[room.code || room.room] || {}), ...room } } })),
   setHistory: (room, history) => set((s) => ({ rooms: { ...s.rooms, [room]: { ...(s.rooms[room] || {}), history } } })),
+  removeRoom: (code) => set((s) => {
+    const rooms = { ...s.rooms };
+    const messages = { ...s.messages };
+    const presence = { ...s.presence };
+    const typing = { ...s.typing };
+    delete rooms[code];
+    delete messages[code];
+    delete presence[code];
+    delete typing[code];
+    return {
+      rooms, messages, presence, typing,
+      activeRoom: s.activeRoom === code ? "LOBBY" : s.activeRoom,
+    };
+  }),
+
+  // discoverable public rooms
+  publicRooms: [], // [{ code, name, members, createdAt }]
+  setPublicRooms: (publicRooms) => set({ publicRooms }),
 
   // messages per room (merged from history + live)
   messages: {}, // room -> array

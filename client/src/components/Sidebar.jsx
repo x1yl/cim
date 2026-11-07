@@ -4,16 +4,17 @@ import { send, onMessage } from "../ws";
 import { readableText } from "../colors";
 import { ACCENT_COLORS } from "../palette";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2, Palette, Sparkles } from "lucide-react";
+import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2, Palette, Sparkles, Globe2, Lock } from "lucide-react";
 
 export default function Sidebar() {
   const {
     rooms, activeRoom, setActiveRoom, userCode, name, color, setColor, presence, status,
     namePending, nameError, setNamePending, setNameError,
-    particleDensity, setParticleDensity,
+    particleDensity, setParticleDensity, publicRooms,
   } = useStore();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newVisibility, setNewVisibility] = useState("private");
   const [joinCode, setJoinCode] = useState("");
   const [dmCode, setDmCode] = useState("");
   const [copied, setCopied] = useState(false);
@@ -24,6 +25,7 @@ export default function Sidebar() {
   const [showBackground, setShowBackground] = useState(false);
 
   const roomList = Object.values(rooms);
+  const discoverable = publicRooms.filter((r) => !rooms[r.code]);
 
   useEffect(() => {
     if (!editingName) setDraftName(name);
@@ -72,7 +74,7 @@ export default function Sidebar() {
   const createRoom = (e) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    send({ type: "create_room", name: newName.trim() });
+    send({ type: "create_room", name: newName.trim(), visibility: newVisibility });
     setNewName("");
     setCreating(false);
   };
@@ -283,6 +285,25 @@ export default function Sidebar() {
                     placeholder="room name"
                     className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-accent focus:outline-none"
                   />
+                  <div className="grid grid-cols-2 gap-1 bg-white/5 rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => setNewVisibility("public")}
+                      className={`flex items-center justify-center gap-1 text-xs py-1.5 rounded-md transition ${newVisibility === "public" ? "bg-accent text-accent-contrast" : "text-slate-400 hover:text-white"}`}
+                    >
+                      <Globe2 size={12} /> Public
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewVisibility("private")}
+                      className={`flex items-center justify-center gap-1 text-xs py-1.5 rounded-md transition ${newVisibility === "private" ? "bg-accent text-accent-contrast" : "text-slate-400 hover:text-white"}`}
+                    >
+                      <Lock size={12} /> Private
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    Public rooms appear in the Rooms list. Private rooms are joinable by code only.
+                  </p>
                   <button type="submit" className="w-full py-2 rounded-lg bg-accent text-accent-contrast text-sm font-medium">Create</button>
                 </motion.form>
               )}
@@ -306,6 +327,28 @@ export default function Sidebar() {
                 </motion.button>
               );
             })}
+
+            {discoverable.length > 0 && (
+              <div className="pt-2 mt-2 border-t border-white/5 space-y-1">
+                <div className="flex items-center gap-1.5 px-2 text-[10px] uppercase tracking-wider text-slate-500">
+                  <Globe2 size={11} /> Public rooms
+                </div>
+                {discoverable.map((r) => (
+                  <div key={r.code} className="px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5 flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate">{r.name || r.code}</div>
+                      <div className="text-[10px] text-slate-500">{r.code} · {r.members} online</div>
+                    </div>
+                    <button
+                      onClick={() => send({ type: "join_room", code: r.code })}
+                      className="shrink-0 text-[10px] px-2 py-1 rounded bg-accent text-accent-contrast font-semibold"
+                    >
+                      Join
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 

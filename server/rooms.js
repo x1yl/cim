@@ -14,7 +14,7 @@ function makeCode() {
 
 export const rooms = new Map(); // code -> Room
 
-export function createRoom({ name, owner, isDM = false, dmTarget = null, code: forcedCode = null }) {
+export function createRoom({ name, owner, isDM = false, dmTarget = null, code: forcedCode = null, visibility = "private" }) {
   if (rooms.size >= MAX_ROOMS) return null;
   let code = forcedCode;
   if (!code) do { code = makeCode(); } while (rooms.has(code));
@@ -26,6 +26,7 @@ export function createRoom({ name, owner, isDM = false, dmTarget = null, code: f
     owner,
     isDM,
     dmTarget,
+    visibility: isDM ? "private" : visibility === "public" ? "public" : "private",
     members: new Set(), // userIds
     sockets: new Map(), // userId -> ws
     history: [], // last N messages

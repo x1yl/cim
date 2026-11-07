@@ -121,16 +121,20 @@ function handle(msg) {
       if (msg.onboarding) s.clearName();
       if (s.sound) playBlocked();
       break;
+    case "public_rooms":
+      s.setPublicRooms(msg.rooms || []);
+      break;
     case "room_created":
-      s.upsertRoom({ code: msg.code, name: msg.name, isDM: msg.isDM });
+      s.upsertRoom({ code: msg.code, name: msg.name, isDM: msg.isDM, visibility: msg.visibility });
       break;
     case "room_joined": {
-      s.upsertRoom({ code: msg.room, name: msg.name, isDM: msg.isDM });
+      s.upsertRoom({ code: msg.room, name: msg.name, isDM: msg.isDM, visibility: msg.visibility });
       s.setMessages(msg.room, msg.history || []);
       s.setActiveRoom(msg.room);
       break;
     }
     case "room_left":
+      s.removeRoom(msg.room);
       break;
     case "message":
       s.addMessage(msg.message.room, msg.message);
@@ -161,7 +165,7 @@ function handle(msg) {
     case "left":
       break;
     case "dm_invite":
-      s.upsertRoom({ code: msg.room, name: "DM", isDM: true });
+      s.upsertRoom({ code: msg.room, name: "DM", isDM: true, visibility: "private" });
       break;
     case "pin":
       s.togglePin(msg.room, msg.messageId, msg.pinned);

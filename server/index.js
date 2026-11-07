@@ -86,6 +86,18 @@ function broadcastPresence(room) {
   broadcast(room, { type: "presence", room: room.code, members });
 }
 
+function publicRoomsPayload() {
+  return [...rooms.values()]
+    .filter((r) => r.visibility === "public" && !r.isDM && r.code !== "LOBBY")
+    .sort((a, b) => b.members.size - a.members.size || b.createdAt - a.createdAt)
+    .map((r) => ({ code: r.code, name: r.name, members: r.members.size, createdAt: r.createdAt }));
+}
+
+function broadcastPublicRooms() {
+  const payload = { type: "public_rooms", rooms: publicRoomsPayload() };
+  for (const ws of connections.keys()) sendTo(ws, payload);
+}
+
 wss.on("connection", (ws, req) => {
   const limiter = makeLimiter();
   const state = {
@@ -103,6 +115,7 @@ wss.on("connection", (ws, req) => {
   });
 
   ws.on("close", () => {
+    let publicChanged = false;
     if (state.userId) {
       for (const code of state.rooms) {
         const room = getRoom(code);
@@ -110,10 +123,12 @@ wss.on("connection", (ws, req) => {
           leaveRoom(room, state.userId);
           broadcast(room, { type: "left", room: code, userId: state.userId, name: state.name });
           broadcastPresence(room);
+          if (room.visibility === "public") publicChanged = true;
         }
       }
     }
     connections.delete(ws);
+    if (publicChanged) broadcastPublicRooms();
   });
 
   ws.on("error", () => {});
@@ -157,7 +172,7 @@ async function handle(ws, state, msg) {
       userIdToCode.set(state.userId, code);
 
       // auto-join lobby (recreate if it ever disappeared)
-      const lobby = getRoom("LOBBY") || createRoom({ name: "Public Lobby", owner: "system", code: "LOBBY" });
+      const lobby = getRoom("LOBBY") || createRoom({ name: "Public Lobby", owner: "system", code: "LOBBY", visibility: "public" });
       if (lobby) {
         joinRoom(lobby, state.userId, ws);
         state.rooms.add("LOBBY");
@@ -172,9 +187,10 @@ async function handle(ws, state, msg) {
         lobby: "LOBBY",
         moderation: moderationInfo(),
       });
+      sendTo(ws, { type: "public_rooms", rooms: publicRoomsPayload() });
 
       if (lobby) {
-        sendTo(ws, { type: "room_joined", room: "LOBBY", name: lobby.name, history: lobby.history });
+        sendTo(ws, { type: "room_joined", room: "LOBBY", name: lobby.name, history: lobby.history, visibility: "public" });
         broadcast(lobby, { type: "joined", room: "LOBBY", userId: state.userId, name: state.name, color: state.color }, state.userId);
         broadcastPresence(lobby);
       }
@@ -256,13 +272,15 @@ async function handle(ws, state, msg) {
     case "create_room": {
       if (!state.userId) return;
       const name = sanitize(msg.name || "New Room", 60);
-      const room = createRoom({ name, owner: state.userId });
+      const visibility = msg.visibility === "public" ? "public" : "private";
+      const room = createRoom({ name, owner: state.userId, visibility });
       if (!room) { sendTo(ws, { type: "error", message: "too many rooms" }); return; }
       joinRoom(room, state.userId, ws);
       state.rooms.add(room.code);
-      sendTo(ws, { type: "room_created", code: room.code, name: room.name });
-      sendTo(ws, { type: "room_joined", room: room.code, name: room.name, history: room.history });
+      sendTo(ws, { type: "room_created", code: room.code, name: room.name, visibility: room.visibility });
+      sendTo(ws, { type: "room_joined", room: room.code, name: room.name, history: room.history, visibility: room.visibility });
       broadcastPresence(room);
+      if (room.visibility === "public") broadcastPublicRooms();
       break;
     }
 
@@ -272,21 +290,36 @@ async function handle(ws, state, msg) {
       if (!room) { sendTo(ws, { type: "error", message: "room not found" }); return; }
       if (!joinRoom(room, state.userId, ws)) { sendTo(ws, { type: "error", message: "room full" }); return; }
       state.rooms.add(room.code);
-      sendTo(ws, { type: "room_joined", room: room.code, name: room.name, history: room.history, isDM: room.isDM });
+      sendTo(ws, {
+        type: "room_joined",
+        room: room.code,
+        name: room.name,
+        history: room.history,
+        isDM: room.isDM,
+        visibility: room.visibility,
+      });
       broadcast(room, { type: "joined", room: room.code, userId: state.userId, name: state.name, color: state.color }, state.userId);
       broadcastPresence(room);
+      if (room.visibility === "public") broadcastPublicRooms();
       break;
     }
 
     case "leave_room": {
       if (!state.userId) return;
       const room = getRoom(msg.code);
-      if (!room || room.code === "LOBBY") return;
+      if (!room || room.code === "LOBBY" || !room.members.has(state.userId)) return;
       leaveRoom(room, state.userId);
       state.rooms.delete(room.code);
       sendTo(ws, { type: "room_left", room: room.code });
       broadcast(room, { type: "left", room: room.code, userId: state.userId, name: state.name }, state.userId);
       broadcastPresence(room);
+      if (room.visibility === "public") broadcastPublicRooms();
+      break;
+    }
+
+    case "list_public_rooms": {
+      if (!state.userId) return;
+      sendTo(ws, { type: "public_rooms", rooms: publicRoomsPayload() });
       break;
     }
 
@@ -309,10 +342,10 @@ async function handle(ws, state, msg) {
         const tState = connections.get(targetWs);
         if (!dmRoom.members.has(targetUserId)) { joinRoom(dmRoom, targetUserId, targetWs); tState.rooms.add(dmRoom.code); }
         sendTo(targetWs, { type: "dm_invite", room: dmRoom.code, from: { userId: state.userId, name: state.name, color: state.color } });
-        sendTo(targetWs, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true });
+        sendTo(targetWs, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true, visibility: "private" });
       }
-      sendTo(ws, { type: "room_created", code: dmRoom.code, name: dmRoom.name, isDM: true });
-      sendTo(ws, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true });
+      sendTo(ws, { type: "room_created", code: dmRoom.code, name: dmRoom.name, isDM: true, visibility: "private" });
+      sendTo(ws, { type: "room_joined", room: dmRoom.code, name: dmRoom.name, history: dmRoom.history, isDM: true, visibility: "private" });
       broadcastPresence(dmRoom);
       break;
     }
@@ -410,7 +443,7 @@ function randomColor() {
 }
 
 // lobby
-createRoom({ name: "Public Lobby", owner: "system", code: "LOBBY" });
+createRoom({ name: "Public Lobby", owner: "system", code: "LOBBY", visibility: "public" });
 
 server.listen(PORT, HOST, () => {
   console.log(`CIM server listening on ${HOST}:${PORT}`);

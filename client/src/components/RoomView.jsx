@@ -1,12 +1,13 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useStore } from "../store";
+import { send } from "../ws";
 import { readableText } from "../colors";
 import { motion, AnimatePresence } from "framer-motion";
 import Message from "./Message.jsx";
 import Composer from "./Composer.jsx";
 import Typing from "./Typing.jsx";
 import ModerationNotice from "./ModerationNotice.jsx";
-import { Hash, MessageCircle, Users, Pin } from "lucide-react";
+import { Hash, MessageCircle, Users, LogOut, Globe2, Lock } from "lucide-react";
 
 export default function RoomView() {
   const { rooms, activeRoom, messages, presence } = useStore();
@@ -43,6 +44,12 @@ export default function RoomView() {
             <span>·</span>
             <Users size={12} />
             <span>{members.length} online</span>
+            {room && !room.isDM && (
+              <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-500">
+                {room.visibility === "public" ? <Globe2 size={10} /> : <Lock size={10} />}
+                {room.visibility || "private"}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex -space-x-2">
@@ -60,6 +67,15 @@ export default function RoomView() {
             </div>
           ))}
         </div>
+        {activeRoom !== "LOBBY" && (
+          <button
+            onClick={() => send({ type: "leave_room", code: activeRoom })}
+            title="Leave room"
+            className="shrink-0 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-red-500/30 text-red-300 hover:bg-red-500/10 transition"
+          >
+            <LogOut size={13} /> Leave
+          </button>
+        )}
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
