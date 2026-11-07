@@ -9,7 +9,7 @@ import RoomView from "./components/RoomView.jsx";
 import CommandPalette from "./components/CommandPalette.jsx";
 
 export default function App() {
-  const { name, status, theme, reducedMotion } = useStore();
+  const { name, theme } = useStore();
 
   useEffect(() => {
     connect();
@@ -41,14 +41,10 @@ export default function App() {
       <Aurora />
       <Particles />
       <Sidebar />
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 relative z-10">
         <RoomView />
       </main>
       <CommandPalette />
-      <div className="fixed top-3 right-3 glass px-3 py-1.5 rounded-full text-xs flex items-center gap-2 z-50 panel-angular">
-        <span className={`w-2 h-2 rounded-full ${status === "connected" ? "bg-green-400" : "bg-yellow-400 animate-pulse"}`} />
-        {status === "connected" ? "connected" : status}
-      </div>
     </div>
   );
 }

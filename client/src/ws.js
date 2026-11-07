@@ -18,10 +18,7 @@ export function connect() {
 
   ws.onopen = () => {
     reconnectDelay = 1000;
-    const { name, color, userCode } = useStore.getState();
-    if (name) {
-      send({ type: "hello", name, color, userCode: userCode || undefined });
-    }
+    hello();
   };
 
   ws.onmessage = (ev) => {
@@ -49,6 +46,11 @@ function scheduleReconnect() {
 
 export function send(obj) {
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+export function hello() {
+  const { name, color, userCode } = useStore.getState();
+  if (name) send({ type: "hello", name, color, userCode: userCode || undefined });
 }
 
 export function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }

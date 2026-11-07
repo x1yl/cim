@@ -8,7 +8,7 @@ html, body, #root { height: 100%; background: transparent; }
 
 /* Obsidian arena background */
 .arena-bg {
-  position: fixed; inset: 0; z-index: 0;
+  position: fixed; inset: 0; z-index: -1;
   background:
     radial-gradient(ellipse at 15% 20%, rgba(255,179,0,0.18), transparent 45%),
     radial-gradient(ellipse at 85% 75%, rgba(255,23,68,0.16), transparent 45%),
@@ -22,13 +22,12 @@ html, body, #root { height: 100%; background: transparent; }
   background: linear-gradient(90deg, transparent, rgba(255,179,0,0.6), transparent);
   animation: scan 6s linear infinite;
   box-shadow: 0 0 12px rgba(255,179,0,0.5);
-  z-index: 1;
 }
 
 .particles {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: -1;
   pointer-events: none;
 }
 

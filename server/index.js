@@ -120,8 +120,8 @@ function handle(ws, state, msg) {
       userCodes.set(code, state.userId);
       userIdToCode.set(state.userId, code);
 
-      // auto-join lobby
-      const lobby = getRoom("LOBBY");
+      // auto-join lobby (recreate if it ever disappeared)
+      const lobby = getRoom("LOBBY") || createRoom({ name: "Public Lobby", owner: "system", code: "LOBBY" });
       if (lobby) {
         joinRoom(lobby, state.userId, ws);
         state.rooms.add("LOBBY");

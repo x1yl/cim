@@ -51,7 +51,7 @@ export function leaveRoom(room, userId) {
   room.members.delete(userId);
   room.sockets.delete(userId);
   // remove empty non-lobby rooms after a grace period? Keep simple: delete if empty & not lobby & not created recently
-  if (room.members.size === 0 && room.code !== "LOBBY-00" && Date.now() - room.createdAt > 60_000) {
+  if (room.members.size === 0 && room.code !== "LOBBY" && Date.now() - room.createdAt > 60_000) {
     rooms.delete(room.code);
   }
 }

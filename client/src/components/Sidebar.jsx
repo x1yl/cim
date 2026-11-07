@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Hash, MessageCircle, Search, LogOut, Copy, Check } from "lucide-react";
 
 export default function Sidebar() {
-  const { rooms, activeRoom, setActiveRoom, userCode, name, color, presence } = useStore();
+  const { rooms, activeRoom, setActiveRoom, userCode, name, color, presence, status } = useStore();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [joinCode, setJoinCode] = useState("");
@@ -44,7 +44,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-72 shrink-0 glass-strong border-r border-amber-500/20 flex flex-col">
+    <aside className="w-72 shrink-0 glass-strong border-r border-amber-500/20 flex flex-col relative z-10">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style={{ background: color }}>
@@ -152,8 +152,12 @@ export default function Sidebar() {
         )}
       </div>
 
-      <div className="p-3 border-t border-white/5 text-[10px] text-slate-500">
-        Rooms vanish when server restarts. Nothing is stored.
+      <div className="p-3 border-t border-amber-500/10 space-y-1">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+          <span className={`w-1.5 h-1.5 rounded-full ${status === "connected" ? "bg-green-400 shadow-[0_0_6px_#4ade80]" : "bg-yellow-400 animate-pulse"}`} />
+          <span className={status === "connected" ? "text-green-400" : "text-yellow-400"}>{status}</span>
+        </div>
+        <div className="text-[10px] text-slate-500">Rooms vanish when server restarts. Nothing is stored.</div>
       </div>
     </aside>
   );

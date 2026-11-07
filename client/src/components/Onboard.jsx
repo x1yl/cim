@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStore } from "../store";
+import { hello } from "../ws";
 import { motion } from "framer-motion";
 
 const COLORS = ["#00e5ff","#ffb300","#ff1744","#06d6a0","#ffbe0b","#fb5607","#00f5d4","#f72585"];
@@ -14,6 +15,7 @@ export default function Onboard() {
     const n = name.trim().slice(0, 32) || "anon";
     setName(n);
     setColor(color);
+    hello();
   };
 
   return (
