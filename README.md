@@ -46,51 +46,77 @@ npm start            # server serves client/dist on :3001
 
 ## Deploy on a Raspberry Pi (open internet)
 
-### Option A: Docker (recommended)
+Use a **64-bit** Raspberry Pi OS (Pi 4/5 recommended) and give the Pi a static LAN IP.
+
+### 1. Install Docker
 ```bash
-# on the Pi
-git clone <your-fork> cim && cd cim
-docker compose up -d --build
-# app on http://<pi-ip>:3001
-```
-For HTTPS (required for wss:// from browsers on the public internet), enable the TLS profile with a domain pointing at the Pi:
-```bash
-# edit Caddyfile: replace example.com with your domain
-docker compose --profile tls up -d
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+newgrp docker
 ```
 
-### Option B: Bare metal
+### 2. Get the code + configure
 ```bash
-# install Node 20+ (nvm or apt)
+git clone https://github.com/x1yl/cim.git cim
+cd cim
+cp .env.example .env
+nano .env            # set MISTRAL_API_KEY=... (leave blank to disable moderation)
+```
+
+### 3. Test on the LAN
+```bash
+docker compose up -d --build
+# open http://<pi-lan-ip>:3001
+```
+Check logs / health:
+```bash
+docker compose logs -f cim
+curl http://localhost:3001/health
+```
+
+### 4. Put it on the open internet with HTTPS
+WebSockets from an HTTPS page must use `wss://`, so you need TLS. Two good options:
+
+**Option A — Domain + router port forwarding (Caddy handles Let's Encrypt)**
+1. Point a DNS `A` record (e.g. `cim.example.com`) at your public IP.
+2. Forward TCP **80** and **443** on your router to the Pi.
+3. Edit `Caddyfile`: replace `example.com` with your domain.
+4. Start the TLS profile:
+   ```bash
+   docker compose --profile tls up -d
+   ```
+   Caddy obtains and renews the certificate automatically.
+
+**Option B — Cloudflare Tunnel (no port forwarding)**
+1. Create a tunnel in the Cloudflare dashboard and install `cloudflared` on the Pi.
+2. Route `cim.example.com` → `http://localhost:3001`.
+3. Cloudflare terminates TLS; no open ports on your router.
+   ```bash
+   # example
+   cloudflared tunnel --url http://localhost:3001
+   ```
+
+### Updating
+```bash
+cd cim && git pull
+docker compose up -d --build
+```
+
+### Option C: Bare metal (no Docker)
+```bash
+sudo apt install -y nodejs npm
 npm install
 npm run build
-# run under pm2 / systemd
-npm install -g pm2
+sudo npm install -g pm2
 pm2 start server/index.js --name cim
 pm2 save && pm2 startup
 ```
-
-### systemd unit example
-```ini
-[Unit]
-Description=CIM server
-After=network.target
-
-[Service]
-Type=simple
-User=pi
-WorkingDirectory=/home/pi/cim
-ExecStart=/usr/bin/node server/index.js
-Restart=always
-Environment=PORT=3001
-Environment=HOST=0.0.0.0
-
-[Install]
-WantedBy=multi-user.target
-```
+Use Caddy/nginx in front for HTTPS (same as above).
 
 ### Notes for open internet
-- The server holds all state in memory; restarts wipe rooms/messages.
-- Rate limiting is per-socket and basic; for heavy public use consider putting it behind Cloudflare.
-- No auth: names are self-claimed. Treat as a casual space, not a secure one.
-- WebSockets require the proxy to support upgrades (Caddy/nginx with `proxy_http_version 1.1` + `Upgrade` headers). Caddy handles this automatically.
+- All state is in memory; restarts wipe rooms/messages.
+- Rate limiting is per-socket and basic; put Cloudflare in front for a public deployment.
+- No auth: names are self-claimed. Treat it as a casual space, not a secure one.
+- Keep `.env` private; it contains your Mistral API key. It is already gitignored.
+- WebSockets require proxy upgrade support; Caddy handles this automatically.
+- Docker images for Node 20 support arm64, but a 32-bit OS will not work — use 64-bit.
