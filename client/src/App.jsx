@@ -37,7 +37,7 @@ export default function App() {
   );
 
   return (
-    <div className="h-full flex relative overflow-hidden">
+    <div className="h-full flex relative overflow-hidden z-10">
       <Aurora />
       <Particles />
       <Sidebar />
