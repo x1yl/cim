@@ -30,14 +30,14 @@ export default function CommandPalette() {
     <AnimatePresence>
       {paletteOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24"
           onClick={() => setPaletteOpen(false)}
         >
           <motion.div
-            initial={{ y: -20, opacity: 0 }}
+            initial={{ y: 0, opacity: 1 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}

@@ -19,7 +19,7 @@ export default function Onboard() {
   return (
     <div className="h-full flex items-center justify-center p-6">
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.96 }}
+        initial={{ opacity: 1, y: 0, scale: 1 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 18 }}
         className="glass-strong panel-angular p-8 w-full max-w-md shadow-glow"
