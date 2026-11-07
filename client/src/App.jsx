@@ -45,12 +45,10 @@ export default function App() {
         <RoomView />
       </main>
       <CommandPalette />
-      {status !== "connected" && (
-        <div className="fixed bottom-3 right-3 glass px-3 py-1.5 rounded-full text-xs flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-          {status}
-        </div>
-      )}
+      <div className="fixed bottom-3 right-3 glass px-3 py-1.5 rounded-full text-xs flex items-center gap-2 z-50">
+        <span className={`w-2 h-2 rounded-full ${status === "connected" ? "bg-green-400" : "bg-yellow-400 animate-pulse"}`} />
+        {status === "connected" ? "connected" : status}
+      </div>
     </div>
   );
 }
