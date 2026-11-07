@@ -1,8 +1,8 @@
 import { useStore } from "../store";
 
 export default function Typing({ room }) {
-  const typing = useStore((s) => s.typing[room] || {});
-  const names = Object.values(typing);
+  const typing = useStore((s) => s.typing[room]);
+  const names = Object.values(typing || {});
   if (names.length === 0) return null;
   return (
     <div className="flex items-center gap-2 text-xs text-slate-400 italic">
