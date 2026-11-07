@@ -1,8 +1,8 @@
 export default function Aurora() {
   return (
     <>
-      <div className="aurora-bg" />
-      <div className="particles" id="particles" />
+      <div className="arena-bg" />
+      <div className="scanline" />
     </>
   );
 }

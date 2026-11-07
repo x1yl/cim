@@ -33,7 +33,7 @@ export default function Particles() {
         if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(131,56,236,${p.a})`;
+        ctx.fillStyle = `rgba(255,179,0,${p.a})`;
         ctx.fill();
       }
       // connect close points
@@ -42,7 +42,7 @@ export default function Particles() {
           const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
           const d = Math.hypot(dx, dy);
           if (d < 110) {
-            ctx.strokeStyle = `rgba(58,134,255,${0.12 * (1 - d / 110)})`;
+            ctx.strokeStyle = `rgba(0,229,255,${0.12 * (1 - d / 110)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);

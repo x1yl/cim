@@ -40,7 +40,7 @@ export default function Message({ message, room, isReply }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      className={`group relative rounded-xl p-4 ${isOwn ? "bg-purple-500/10 border border-purple-500/20" : "bg-white/5 border border-white/5"} ${message.pinned ? "ring-2 ring-yellow-500/40" : ""}`}
+      className={`group relative panel-angular p-4 ${isOwn ? "bg-amber-500/10 border border-amber-500/30" : "bg-white/[0.03] border border-white/10"} ${message.pinned ? "ring-2 ring-amber-400/60" : ""}`}
     >
       {message.pinned && (
         <div className="absolute -top-2 -right-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -48,7 +48,7 @@ export default function Message({ message, room, isReply }) {
         </div>
       )}
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold shadow" style={{ background: message.color || "#8338ec" }}>
+        <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold shadow" style={{ background: message.color || "#ffb300" }}>
           {(message.name || "?").slice(0, 2).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
@@ -70,7 +70,7 @@ export default function Message({ message, room, isReply }) {
                 <button
                   key={emoji}
                   onClick={() => react(emoji)}
-                  className={`px-2 py-0.5 rounded-full text-xs border transition ${users.includes(userId) ? "bg-purple-600/40 border-purple-500" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
+                  className={`px-2 py-0.5 rounded-full text-xs border transition ${users.includes(userId) ? "bg-amber-500/40 border-amber-400" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
                 >
                   {emoji} <span className="ml-1 text-slate-300">{users.length}</span>
                 </button>
@@ -116,9 +116,9 @@ export default function Message({ message, room, isReply }) {
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="write a reply..."
-                className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-purple-500 focus:outline-none"
+                className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-amber-400 focus:outline-none"
               />
-              <button type="submit" className="px-3 py-1.5 rounded-lg bg-purple-600 text-sm">Reply</button>
+              <button type="submit" className="px-3 py-1.5 rounded-lg bg-amber-500 text-sm">Reply</button>
             </form>
           )}
         </div>

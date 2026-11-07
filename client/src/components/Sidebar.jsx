@@ -44,7 +44,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-72 shrink-0 glass border-r border-white/5 flex flex-col">
+    <aside className="w-72 shrink-0 glass-strong border-r border-amber-500/20 flex flex-col">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style={{ background: color }}>
@@ -66,7 +66,7 @@ export default function Sidebar() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 text-xs py-1.5 rounded-md capitalize transition ${tab === t ? "bg-purple-600 text-white" : "text-slate-400 hover:text-white"}`}
+              className={`flex-1 text-xs py-1.5 rounded-md capitalize transition ${tab === t ? "bg-amber-500 text-white" : "text-slate-400 hover:text-white"}`}
             >
               {t === "rooms" ? "Rooms" : t === "join" ? "Join" : "DM"}
             </button>
@@ -97,9 +97,9 @@ export default function Sidebar() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="room name"
-                    className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-purple-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:border-amber-400 focus:outline-none"
                   />
-                  <button type="submit" className="w-full py-2 rounded-lg bg-purple-600 text-sm font-medium">Create</button>
+                  <button type="submit" className="w-full py-2 rounded-lg bg-amber-500 text-sm font-medium">Create</button>
                 </motion.form>
               )}
             </AnimatePresence>
@@ -112,9 +112,9 @@ export default function Sidebar() {
                   key={r.code}
                   whileHover={{ x: 2 }}
                   onClick={() => setActiveRoom(r.code)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2 ${isActive ? "bg-purple-600/30 border border-purple-500/40" : "hover:bg-white/5"}`}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2 ${isActive ? "bg-amber-500/30 border border-amber-400/40" : "hover:bg-white/5"}`}
                 >
-                  {r.isDM ? <MessageCircle size={15} className="text-pink-400" /> : <Hash size={15} className="text-slate-400" />}
+                  {r.isDM ? <MessageCircle size={15} className="text-cyan-400" /> : <Hash size={15} className="text-slate-400" />}
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">{r.name || r.code}</div>
                     <div className="text-[10px] text-slate-500">{r.code} · {members} online</div>
@@ -131,9 +131,9 @@ export default function Sidebar() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="ABC-123"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-purple-500 focus:outline-none"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-amber-400 focus:outline-none"
             />
-            <button type="submit" className="w-full py-2 rounded-lg bg-blue-600 text-sm font-medium">Join room</button>
+            <button type="submit" className="w-full py-2 rounded-lg bg-red-600 text-sm font-medium">Join room</button>
             <p className="text-xs text-slate-500">Enter a 6-character room code shared by someone.</p>
           </form>
         )}
@@ -144,9 +144,9 @@ export default function Sidebar() {
               value={dmCode}
               onChange={(e) => setDmCode(e.target.value.toLowerCase())}
               placeholder="user code"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-purple-500 focus:outline-none"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono focus:border-amber-400 focus:outline-none"
             />
-            <button type="submit" className="w-full py-2 rounded-lg bg-pink-600 text-sm font-medium">Start DM</button>
+            <button type="submit" className="w-full py-2 rounded-lg bg-cyan-600 text-sm font-medium">Start DM</button>
             <p className="text-xs text-slate-500">Ask the other person for their personal code (shown under their name).</p>
           </form>
         )}

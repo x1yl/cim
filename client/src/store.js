@@ -5,7 +5,7 @@ const ls = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage
 export const useStore = create((set, get) => ({
   // identity
   name: localStorage.getItem("cim_name") || "",
-  color: localStorage.getItem("cim_color") || "#8338ec",
+  color: localStorage.getItem("cim_color") || "#ffb300",
   userCode: localStorage.getItem("cim_usercode") || "",
   userId: null,
   setName: (name) => { localStorage.setItem("cim_name", name); set({ name }); },

@@ -41,7 +41,7 @@ export default function CommandPalette() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="glass rounded-2xl w-full max-w-lg shadow-glow overflow-hidden"
+            className="glass-strong panel-angular w-full max-w-lg shadow-glow overflow-hidden"
           >
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
               <Search size={16} className="text-slate-400" />
@@ -69,7 +69,7 @@ export default function CommandPalette() {
               {q.startsWith("create:") && (
                 <button
                   onClick={() => { send({ type: "create_room", name: q.slice(7).trim() }); setPaletteOpen(false); setQ(""); }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm text-purple-300"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm text-amber-200"
                 >
                   <Plus size={14} /> Create room "{q.slice(7).trim()}"
                 </button>

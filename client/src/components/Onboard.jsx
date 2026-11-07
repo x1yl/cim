@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useStore } from "../store";
 import { motion } from "framer-motion";
 
-const COLORS = ["#ff006e","#8338ec","#3a86ff","#06d6a0","#ffbe0b","#fb5607","#00f5d4","#f72585"];
+const COLORS = ["#00e5ff","#ffb300","#ff1744","#06d6a0","#ffbe0b","#fb5607","#00f5d4","#f72585"];
 
 export default function Onboard() {
   const { setName, setColor } = useStore();
@@ -22,9 +22,9 @@ export default function Onboard() {
         initial={{ opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 18 }}
-        className="glass rounded-2xl p-8 w-full max-w-md shadow-glow"
+        className="glass-strong panel-angular p-8 w-full max-w-md shadow-glow"
       >
-        <h1 className="text-4xl font-extrabold glow-text mb-1">CIM</h1>
+        <h1 className="text-5xl font-black font-display glow-text mb-1 tracking-wider">CIM</h1>
         <p className="text-slate-400 text-sm mb-6">Ephemeral communication. No accounts. No storage. Just vibes.</p>
         <form onSubmit={submit} className="space-y-4">
           <div>
@@ -34,7 +34,7 @@ export default function Onboard() {
               value={name}
               onChange={(e) => setNameLocal(e.target.value)}
               placeholder="your alias"
-              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+              className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30"
             />
           </div>
           <div>
@@ -53,7 +53,7 @@ export default function Onboard() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 transition shadow-glow"
+            className="w-full py-3 panel-angular font-bold font-display tracking-wider bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-400 hover:to-red-500 transition shadow-glow uppercase"
           >
             Enter the forum →
           </button>
