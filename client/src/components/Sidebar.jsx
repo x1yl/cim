@@ -4,12 +4,13 @@ import { send, onMessage } from "../ws";
 import { readableText } from "../colors";
 import { ACCENT_COLORS } from "../palette";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2, Palette } from "lucide-react";
+import { Plus, Hash, MessageCircle, Copy, Check, Pencil, Loader2, Palette, Sparkles } from "lucide-react";
 
 export default function Sidebar() {
   const {
     rooms, activeRoom, setActiveRoom, userCode, name, color, setColor, presence, status,
     namePending, nameError, setNamePending, setNameError,
+    particleDensity, setParticleDensity,
   } = useStore();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -20,6 +21,7 @@ export default function Sidebar() {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [showColors, setShowColors] = useState(false);
+  const [showBackground, setShowBackground] = useState(false);
 
   const roomList = Object.values(rooms);
 
@@ -101,6 +103,16 @@ export default function Sidebar() {
     send({ type: "set_color", color: c });
   };
 
+  const toggleColors = () => {
+    setShowColors((v) => !v);
+    setShowBackground(false);
+  };
+
+  const toggleBackground = () => {
+    setShowBackground((v) => !v);
+    setShowColors(false);
+  };
+
   return (
     <aside className="w-72 shrink-0 glass-strong border-r border-accent/20 flex flex-col relative z-10">
       <div className="p-4 border-b border-white/5">
@@ -125,13 +137,22 @@ export default function Sidebar() {
                 </button>
               )}
               <button
-                onClick={() => setShowColors((v) => !v)}
+                onClick={toggleColors}
                 title="Change accent color"
                 aria-label="Change accent color"
                 aria-expanded={showColors}
                 className={`transition shrink-0 ${showColors ? "text-accent" : "text-slate-500 hover:text-accent"}`}
               >
                 <Palette size={12} />
+              </button>
+              <button
+                onClick={toggleBackground}
+                title="Background constellation"
+                aria-label="Background constellation"
+                aria-expanded={showBackground}
+                className={`transition shrink-0 ${showBackground ? "text-accent" : "text-slate-500 hover:text-accent"}`}
+              >
+                <Sparkles size={12} />
               </button>
             </div>
             <button onClick={copyCode} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
@@ -156,6 +177,30 @@ export default function Sidebar() {
                   style={{ background: c }}
                 />
               ))}
+            </div>
+          </div>
+        )}
+
+        {showBackground && (
+          <div className="mt-3 rounded-lg bg-white/5 border border-white/10 px-2.5 py-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-400">Constellation</span>
+              <span className="text-[10px] text-slate-500">{particleDensity.toFixed(2)}×</span>
+            </div>
+            <input
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.25"
+              value={particleDensity}
+              onChange={(e) => setParticleDensity(parseFloat(e.target.value))}
+              aria-label="Constellation density"
+              className="w-full cursor-pointer"
+              style={{ accentColor: color }}
+            />
+            <div className="flex justify-between text-[9px] text-slate-500 mt-1">
+              <span>Calm</span>
+              <span>Busy</span>
             </div>
           </div>
         )}

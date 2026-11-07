@@ -9,7 +9,7 @@ A real-time forum + chat with **zero auth, zero storage**. Everything lives in m
 - DMs by personal user code
 - Forum-style posts with markdown, threaded replies, emoji reactions, pins
 - Typing indicators, presence, real-time broadcast
-- "Over the top" UI: accent-themed aurora background, particles, glassmorphism, animations, themes, command palette (⌘K)
+- "Over the top" UI: accent-themed aurora background, adjustable-density constellation particles, glassmorphism, animations, themes, command palette (⌘K)
 - Rate limiting per socket, room size caps
 
 ## AI moderation (Mistral)

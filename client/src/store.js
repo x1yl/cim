@@ -70,6 +70,17 @@ export const useStore = create((set, get) => ({
   reducedMotion: false,
   setReducedMotion: (v) => set({ reducedMotion: v }),
 
+  // background constellation density (0.5 = calm, 3 = very busy)
+  particleDensity: (() => {
+    const v = parseFloat(localStorage.getItem("cim_particles"));
+    return Number.isFinite(v) ? Math.min(3, Math.max(0.5, v)) : 1.25;
+  })(),
+  setParticleDensity: (v) => {
+    const n = Math.min(3, Math.max(0.5, Number(v) || 1.25));
+    localStorage.setItem("cim_particles", String(n));
+    set({ particleDensity: n });
+  },
+
   // command palette
   paletteOpen: false,
   setPaletteOpen: (v) => set({ paletteOpen: v }),

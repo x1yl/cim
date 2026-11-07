@@ -6,6 +6,7 @@ export default function Particles() {
   const canvasRef = useRef(null);
   const reducedMotion = useStore((s) => s.reducedMotion);
   const color = useStore((s) => s.color);
+  const density = useStore((s) => s.particleDensity);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -14,19 +15,30 @@ export default function Particles() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let raf;
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    let pts = [];
+
+    const makePoints = () => {
+      // Scale the count with the viewport so wide screens stay busy.
+      const area = canvas.width * canvas.height;
+      const base = Math.round(area / 15000);
+      const count = Math.max(40, Math.min(320, Math.round(base * density)));
+      pts = Array.from({ length: count }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 1.8 + 0.5,
+        a: Math.random() * 0.45 + 0.25,
+      }));
+    };
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      makePoints();
+    };
     resize();
     window.addEventListener("resize", resize);
-
-    const N = 60;
-    const pts = Array.from({ length: N }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      r: Math.random() * 1.6 + 0.4,
-      a: Math.random() * 0.5 + 0.2,
-    }));
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -40,12 +52,13 @@ export default function Particles() {
         ctx.fill();
       }
       // connect close points
+      const linkDist = 130;
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
           const d = Math.hypot(dx, dy);
-          if (d < 110) {
-            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.12 * (1 - d / 110)})`;
+          if (d < linkDist) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.16 * (1 - d / linkDist)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);
@@ -58,7 +71,7 @@ export default function Particles() {
     };
     draw();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
-  }, [reducedMotion, color]);
+  }, [reducedMotion, color, density]);
 
   if (reducedMotion) return null;
   return <canvas ref={canvasRef} className="particles" />;
