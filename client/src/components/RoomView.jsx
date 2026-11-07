@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Message from "./Message.jsx";
 import Composer from "./Composer.jsx";
 import Typing from "./Typing.jsx";
+import ModerationNotice from "./ModerationNotice.jsx";
 import { Hash, MessageCircle, Users, Pin } from "lucide-react";
 
 export default function RoomView() {
@@ -75,6 +76,7 @@ export default function RoomView() {
         <Typing room={activeRoom} />
       </div>
 
+      <ModerationNotice room={activeRoom} />
       <Composer room={activeRoom} />
     </div>
   );

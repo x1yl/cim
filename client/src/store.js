@@ -51,6 +51,12 @@ export const useStore = create((set, get) => ({
   presence: {}, // room -> members[]
   setPresence: (room, members) => set((s) => ({ presence: { ...s.presence, [room]: members } })),
 
+  // moderation
+  moderation: null, // { enabled, model, failClosed }
+  setModeration: (moderation) => set({ moderation }),
+  moderationNotice: null, // { room, flagged, message }
+  setModerationNotice: (notice) => set({ moderationNotice: notice }),
+
   // ui
   theme: localStorage.getItem("cim_theme") || "cyber",
   setTheme: (t) => { localStorage.setItem("cim_theme", t); set({ theme: t }); },

@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { useStore } from "../store";
 import { send } from "../ws";
 import { motion } from "framer-motion";
-import { Send, Bold, Code, Image as ImageIcon } from "lucide-react";
+import { Send, ShieldCheck } from "lucide-react";
 
 export default function Composer({ room }) {
+  const moderation = useStore((s) => s.moderation);
   const [body, setBody] = useState("");
   const [title, setTitle] = useState("");
   const [showTitle, setShowTitle] = useState(false);
@@ -51,6 +52,11 @@ export default function Composer({ room }) {
           Title
         </button>
         <span className="text-[10px] text-slate-500">Markdown supported · Ctrl+Enter to send</span>
+        {moderation?.enabled && (
+          <span className="ml-auto flex items-center gap-1 text-[10px] uppercase tracking-wider text-green-400/80" title={`Moderated by ${moderation.model}`}>
+            <ShieldCheck size={12} /> AI moderated
+          </span>
+        )}
       </div>
       {showTitle && (
         <input

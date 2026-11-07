@@ -9,6 +9,11 @@ services:
     environment:
       - PORT=3001
       - HOST=0.0.0.0
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - MISTRAL_MODERATION_MODEL=${MISTRAL_MODERATION_MODEL:-mistral-moderation-2603}
+      - MODERATION_ENABLED=${MODERATION_ENABLED:-true}
+      - MODERATION_FAIL_CLOSED=${MODERATION_FAIL_CLOSED:-false}
+      - MODERATION_TIMEOUT_MS=${MODERATION_TIMEOUT_MS:-8000}
     # For TLS on a Pi, put Caddy in front (see Caddyfile).
 
   # Optional reverse proxy for HTTPS (needed for wss:// on open internet)

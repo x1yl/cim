@@ -11,6 +11,27 @@ A real-time forum + chat with **zero auth, zero storage**. Everything lives in m
 - "Over the top" UI: aurora background, particles, glassmorphism, animations, themes, command palette (⌘K)
 - Rate limiting per socket, room size caps
 
+## AI moderation (Mistral)
+
+Messages are checked **server-side** with Mistral's moderation API *before* they are stored or broadcast. The API key never reaches the browser.
+
+```bash
+cp .env.example .env
+# edit .env and set MISTRAL_API_KEY=...
+npm run dev
+```
+
+Configuration:
+| Env var | Default | Purpose |
+|---|---|---|
+| `MISTRAL_API_KEY` | — | Required to enable moderation |
+| `MISTRAL_MODERATION_MODEL` | `mistral-moderation-2603` | Model ID (falls back to `mistral-moderation-latest` if unavailable) |
+| `MODERATION_ENABLED` | `true` | Set `false` to disable checks |
+| `MODERATION_FAIL_CLOSED` | `false` | `true` = reject when the API is unreachable; `false` = allow |
+| `MODERATION_TIMEOUT_MS` | `8000` | Per-request timeout |
+
+Blocked messages are not persisted or broadcast; the sender gets a `moderation_blocked` event and a red banner listing the flagged categories. Results are cached in-memory for 5 minutes to avoid duplicate API calls.
+
 ## Dev
 ```bash
 npm install

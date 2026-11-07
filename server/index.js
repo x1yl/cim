@@ -1,3 +1,4 @@
+import "./env.js";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -8,6 +9,7 @@ import {
   rooms, createRoom, getRoom, joinRoom, leaveRoom,
   pushHistory, broadcast, sendTo, LIMITS,
 } from "./rooms.js";
+import { moderateText, moderationInfo } from "./moderation.js";
 
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -84,7 +86,7 @@ wss.on("connection", (ws, req) => {
     let msg;
     try { msg = JSON.parse(raw.toString()); } catch { return; }
     if (!msg || typeof msg.type !== "string") return;
-    handle(ws, state, msg);
+    handle(ws, state, msg).catch((err) => console.error("[ws] handler error:", err));
   });
 
   ws.on("close", () => {
@@ -104,7 +106,7 @@ wss.on("connection", (ws, req) => {
   ws.on("error", () => {});
 });
 
-function handle(ws, state, msg) {
+async function handle(ws, state, msg) {
   switch (msg.type) {
     case "hello": {
       if (state.userId) return;
@@ -134,6 +136,7 @@ function handle(ws, state, msg) {
         color: state.color,
         userCode: state.code,
         lobby: "LOBBY",
+        moderation: moderationInfo(),
       });
 
       if (lobby) {
@@ -216,6 +219,22 @@ function handle(ws, state, msg) {
       if (!body.trim()) return;
       const title = sanitize(msg.title || "", 120);
       const parentId = msg.parentId ? sanitize(String(msg.parentId), 64) : null;
+
+      // Mistral moderation happens BEFORE anything is stored or broadcast.
+      const verdict = await moderateText(title ? `${title}\n\n${body}` : body);
+      if (!verdict.allowed) {
+        sendTo(ws, {
+          type: "moderation_blocked",
+          room: room.code,
+          flagged: verdict.flagged,
+          scores: verdict.scores,
+          message: verdict.error
+            ? "Message blocked: moderation service unavailable."
+            : "Message blocked by moderation.",
+        });
+        return;
+      }
+
       const id = uuid();
       const post = {
         id,
